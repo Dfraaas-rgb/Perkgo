@@ -13,7 +13,6 @@ jobs:
       - name: Extract rar/zip parts and locate project
         id: proj
         run: |
-          # 1) RAR dulu (part1.rar + part2.rar: cukup ekstrak part pertama)
           for f in $(find . -name "*.rar" -not -path "./.git/*"); do
             case "$f" in
               *.part[0-9]*.rar)
@@ -25,16 +24,14 @@ jobs:
               unrar x -o+ -idq "$f"
             fi
           done
-          # 2) ZIP terakhir, supaya fix.zip menimpa file dari RAR
           find . -name "*.zip" -not -path "./.git/*" | while read -r z; do echo "Unzip $z"; unzip -oq "$z"; done
           BG=$(find . -name build.gradle -not -path "./.git/*" | head -n1)
           if [ -z "$BG" ]; then
-            echo "build.gradle tidak ditemukan. Isi repo:"
+            echo "build.gradle tidak ditemukan"
             find . -maxdepth 3 -not -path "./.git/*" | head -60
             exit 1
           fi
           echo "dir=$(dirname "$BG")" >> "$GITHUB_OUTPUT"
-          echo "Project di: $(dirname "$BG")"
 
       - uses: actions/setup-java@v4
         with:
