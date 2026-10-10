@@ -10,12 +10,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Extract zip/rar parts and locate project
+      - name: Extract rar/zip parts and locate project
         id: proj
         run: |
-          # ZIP
-          find . -name "*.zip" -not -path "./.git/*" | while read -r z; do unzip -oq "$z"; done
-          # RAR (termasuk part1.rar + part2.rar: cukup ekstrak part pertama)
+          # 1) RAR dulu (part1.rar + part2.rar: cukup ekstrak part pertama)
           for f in $(find . -name "*.rar" -not -path "./.git/*"); do
             case "$f" in
               *.part[0-9]*.rar)
@@ -27,6 +25,8 @@ jobs:
               unrar x -o+ -idq "$f"
             fi
           done
+          # 2) ZIP terakhir, supaya fix.zip menimpa file dari RAR
+          find . -name "*.zip" -not -path "./.git/*" | while read -r z; do echo "Unzip $z"; unzip -oq "$z"; done
           BG=$(find . -name build.gradle -not -path "./.git/*" | head -n1)
           if [ -z "$BG" ]; then
             echo "build.gradle tidak ditemukan. Isi repo:"
